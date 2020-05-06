@@ -4,10 +4,27 @@ set -x
 
 set -eo pipefail
 
+echo "copying notebooks to backup dir (/opt/app-root/backup)"
+rm -rf /opt/app-root/backup
+mkdir /opt/app-root/backup
+cp -Rf /tmp/src/notebooks /opt/app-root/backup/
+ls /tmp/scripts
+
+mv /opt/app-root/builder/run /opt/app-root/builder/run.original
+mv /opt/app-root/builder/assemble /opt/app-root/builder/assemble.original
+cp /tmp/scripts/run /opt/app-root/builder/run
+cp /tmp/scripts/assemble /opt/app-root/builder/assemble
+
+
+mkdir -p /opt/app-root/s2i/bin/
+
+cp /tmp/scripts/* /opt/app-root/s2i/bin/
+
+# ls /tmp/src/.s2i
+# cp -Rf /tmp/src run /opt/app-root/s2i/bin/
 
 # Execute original assemble script.
-
-/opt/app-root/builder/assemble
+/opt/app-root/builder/assemble.original
 
 # Activate ipywidgets extension.
 
@@ -44,7 +61,6 @@ MPLBACKEND=Agg python -c "import matplotlib.pyplot"
 
 # Make sure the S2I source directory is empty as we will use the image
 # produced to run further S2I builds
-
 (shopt -s dotglob ; rm -rf ${APP_ROOT}/src/*)
 
 # Fix up permissions.
